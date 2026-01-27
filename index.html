@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Maker</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/chat.css">
+
+    <!-- Libraries -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Main: Preview -->
+        <main class="preview-area">
+            <div class="layout-limiter">
+                <!-- Floating Controls -->
+                <button id="btn-settings" class="floating-btn floating-left" title="설정"><i
+                        class="fas fa-cog"></i></button>
+
+                <div id="settings-menu" class="settings-menu-container">
+                    <button id="btn-theme-toggle" class="floating-btn settings-item" title="테마 변경"><i
+                            class="far fa-sun"></i></button>
+
+                    <div class="color-theme-row">
+                        <button id="btn-color-toggle" class="floating-btn settings-item" title="색상 변경"><i
+                                class="fas fa-paint-brush"></i></button>
+                        <div id="color-palette" class="color-palette hidden">
+                            <div class="color-circle theme-ocean" data-theme="ocean"></div>
+                            <div class="color-circle theme-berry" data-theme="berry"></div>
+                            <div class="color-circle theme-purple" data-theme="purple"></div>
+                            <div class="color-circle theme-indigo" data-theme="indigo"></div>
+                            <div class="color-circle theme-instagram" data-theme="instagram"></div>
+                        </div>
+                    </div>
+
+                    <!-- Width Control Row -->
+                    <div class="width-control-row">
+                        <button id="btn-width-toggle" class="floating-btn settings-item" title="너비 조절"><i
+                                class="fas fa-arrows-alt-h"></i></button>
+                        <div id="width-palette" class="color-palette hidden">
+                            <button class="width-btn" data-width="375">1</button>
+                            <button class="width-btn" data-width="390">2</button>
+                            <button class="width-btn" data-width="428">3</button>
+                            <button class="width-btn" data-width="480">4</button>
+                            <button class="width-btn" data-width="520">5</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="btn-save" class="floating-save-btn" title="이미지로 저장"><i class="fas fa-download"></i></button>
+
+                <button id="btn-export" class="floating-save-btn" title="이미지 저장" data-html2canvas-ignore="true">
+                    <i class="fas fa-download"></i>
+                </button>
+
+
+                <!-- Dynamic Action Bar will be injected here by JS inside chat-area -->
+                <div id="capture-area" class="canvas-container">
+                    <div class="chat-root" id="chat-root">
+                        <div class="chat-header">
+                            <div class="header-left">
+                                <i class="fas fa-chevron-left back-icon"></i>
+                                <div class="header-profile">
+                                    <div class="header-avatar" id="header-avatar"></div>
+                                    <div class="header-text">
+                                        <div class="header-name" contenteditable="true" id="header-name"
+                                            data-placeholder="이름을 입력하세요"></div>
+                                        <div class="header-username" id="header-username" data-placeholder="계정 상태 설정">
+                                        </div>
+
+                                        <!-- Status Options Menu -->
+                                        <div id="status-options-menu" class="status-menu hidden">
+                                            <div class="status-item" data-type="active-now" title="초록불 + 텍스트">
+                                                <div>Active now</div>
+                                                <div class="green-dot-icon"></div>
+                                            </div>
+                                            <div class="status-item" data-type="active-m">Active N m ago</div>
+                                            <div class="status-item" data-type="active-h">Active N h ago</div>
+                                            <div class="status-item" data-type="active-today">Active Today</div>
+                                            <div class="status-item" data-type="active-yesterday">Active Yesterday</div>
+                                            <div class="status-item" data-type="typing" title="초록불 + 텍스트">
+                                                <div>Typing...</div>
+                                                <div class="green-dot-icon"></div>
+                                            </div>
+                                            <div class="status-item" data-type="custom">직접 입력</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="header-right">
+                                <!-- Phone Icon (Outline) -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.05 12.05 0 0 0 .57 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.05 12.05 0 0 0 2.81.57A2 2 0 0 1 22 16.92z">
+                                    </path>
+                                </svg>
+                                <!-- Video Icon (Outline) -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M23 7l-7 5 7 5V7z"></path>
+                                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                                </svg>
+                                <!-- Optional info icon if needed, but keeping it simple as per request -->
+                            </div>
+                        </div>
+                        <div class="chat-column">
+                            <div class="chat-area" id="chat-area">
+                                <!-- Items will be injected here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="crop-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:#fff;">이미지 편집</h3>
+            <div class="crop-container">
+                <img id="crop-image" src="" style="max-width: 100%;">
+            </div>
+            <div class="modal-actions">
+                <button id="btn-crop-cancel" class="btn btn-secondary">취소</button>
+                <button id="btn-crop-confirm" class="btn">적용하기</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="hidden-file-input" accept="image/*" style="display: none;">
+    <script src="js/app.js"></script>
+    <script src="js/export.js"></script>
+</body>
+
+</html>

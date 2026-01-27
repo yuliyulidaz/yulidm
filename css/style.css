@@ -1,0 +1,689 @@
+:root {
+    --bg-color: #121212;
+    --sidebar-bg: #1e1e1e;
+    --text-color: #ffffff;
+    --text-secondary: #a0a0a0;
+    --border-color: #333333;
+    --accent-color: #0095f6;
+    --accent-hover: #007bb5;
+    --input-bg: #262626;
+    --danger-color: #ff4d4d;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Layout */
+.app-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+    background-color: #000;
+    position: relative;
+}
+
+/* Preview Area */
+.preview-area {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #000;
+    height: 100%;
+    position: relative;
+    padding: 20px;
+    background-size: 20px 20px;
+}
+
+.layout-limiter {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    /* Limit the spread of controls */
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.canvas-container {
+    background-color: var(--bg-color);
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    min-width: 300px;
+    transition: width 0.3s;
+    overflow-y: auto;
+    max-height: 80vh;
+}
+
+/* Day Mode Global */
+body.day-mode .preview-area {
+    background-color: #f0f2f5;
+    /* Light grey for outer area */
+    background-image: radial-gradient(circle, #ddd 1px, transparent 1px);
+    /* Lighter texture */
+}
+
+body.day-mode .canvas-container {
+    background-color: #ffffff;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+    /* Lighter shadow */
+}
+
+/* Floating Controls */
+.floating-save-btn,
+.floating-btn {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.floating-save-btn {
+    top: 20px;
+    right: 0px;
+    /* Aligned to right of limiter */
+}
+
+.floating-btn.floating-left {
+    top: 20px;
+    /* Restored top alignment */
+    left: 0px;
+    /* Aligned to left of limiter */
+}
+
+/* Settings Menu */
+.settings-menu-container {
+    position: absolute;
+    top: 80px;
+    /* 20px (btn top) + 50px (btn height) + 10px (gap) */
+    left: 0;
+    display: none;
+    /* Hidden by default */
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
+}
+
+.settings-menu-container.open {
+    display: flex;
+    animation: fadeInDown 0.2s;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Reusing floating-btn styles but overriding position */
+.settings-item {
+    position: relative !important;
+    /* Override absolute from floating-btn */
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+}
+
+body.day-mode .settings-item {
+    color: #333;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+body.day-mode .settings-item:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Color Theme Row */
+.color-theme-row,
+.width-control-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0px;
+    /* Remove spacing between rows (Handled by container gap) */
+}
+
+/* Re-use palette styles */
+
+.width-btn {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    border: none;
+    background: #333;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    /* Center text */
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.width-btn:hover {
+    transform: scale(1.1);
+    background: #555;
+}
+
+/* Active State for Width Button? Maybe useful */
+.width-btn.active {
+    background: #0095f6;
+    /* Blue highlight */
+}
+
+body.day-mode .width-btn {
+    background: #e0e0e0;
+    color: #000;
+}
+
+body.day-mode .width-btn.active {
+    background: #0095f6;
+    color: #fff;
+}
+
+/* Color Palette Container */
+.color-palette {
+    display: flex;
+    gap: 8px;
+    margin-left: 12px;
+    padding: 8px;
+    background: rgba(30, 30, 30, 0.9);
+    border-radius: 20px;
+    animation: fadeInLeft 0.2s;
+}
+
+body.day-mode .color-palette {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.color-palette.hidden {
+    display: none;
+}
+
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Color Circles */
+.color-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.color-circle:hover {
+    transform: scale(1.1);
+}
+
+.color-circle.active {
+    border-color: white;
+    transform: scale(1.15);
+}
+
+body.day-mode .color-circle.active {
+    border-color: #333;
+}
+
+/* Theme Gradients */
+.theme-ocean {
+    background: linear-gradient(45deg, #0062ff, #00c6ff);
+}
+
+.theme-berry {
+    background: linear-gradient(45deg, #ff7eb3, #ff758c);
+}
+
+.theme-purple {
+    background: linear-gradient(45deg, #654ea3, #eaafc8);
+}
+
+.theme-indigo {
+    background: #485aff;
+}
+
+.theme-instagram {
+    /* Purple to Pink Gradient */
+    background: linear-gradient(135deg, #a740e0 0%, #f04e76 100%);
+}
+
+/* Root Variables for Themes (Default) */
+:root {
+    --sent-bubble-bg: linear-gradient(45deg, #0062ff, #00c6ff);
+    /* Default Ocean/Blue-ish */
+}
+
+.floating-save-btn:hover,
+.floating-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.floating-save-btn:active,
+.floating-btn:active {
+    transform: translateY(0);
+}
+
+/* Floating Width Control (Center) */
+.floating-width-control {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(40, 40, 40, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    padding: 8px 24px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: white;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.floating-width-control span {
+    font-size: 14px;
+    font-weight: 600;
+    min-width: 45px;
+    text-align: center;
+}
+
+.floating-width-control input[type="range"] {
+    width: 140px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    outline: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+
+.floating-width-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s;
+}
+
+.floating-width-control input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Floating Action Bar (Dynamic at bottom of chat) */
+.floating-action-bar {
+    display: flex;
+    gap: 20px;
+    background: rgba(40, 40, 40, 0.4);
+    backdrop-filter: blur(10px);
+    padding: 10px 20px;
+    border-radius: 50px;
+    border: none;
+    margin: 70px auto 10px auto;
+    /* Increased gap by 10px more */
+    width: fit-content;
+    z-index: 100;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.glass-btn {
+    width: 50px;
+    height: 32px;
+    border-radius: 20px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.glass-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+}
+
+.glass-btn:active {
+    transform: translateY(0);
+}
+
+/* Day Mode Floating Buttons */
+body.day-mode .floating-save-btn,
+body.day-mode .floating-btn.floating-left {
+    color: #333;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+body.day-mode .floating-save-btn:hover,
+body.day-mode .floating-btn.floating-left:hover {
+    background: #ffffff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+body.day-mode #btn-toggle-theme {
+    color: #f39c12;
+}
+
+/* Link Side Menu (Sub menu) */
+.link-side-menu {
+    position: absolute;
+    top: -45px;
+    left: 50%;
+    /* Centered for Link button */
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    background: rgba(30, 30, 30, 0.9);
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: none;
+    animation: fadeInCentered 0.2s;
+    z-index: 101;
+}
+
+/* Day Mode Sub-menu */
+body.day-mode .link-side-menu {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+body.day-mode .link-side-menu .glass-btn {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+}
+
+body.day-mode .link-side-menu .glass-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+@keyframes fadeInCentered {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 5px);
+        /* Start slightly lower */
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+        /* End perfectly centered */
+    }
+}
+
+.small-btn {
+    width: 40px;
+    height: 26px;
+    font-size: 12px;
+    border-radius: 13px;
+}
+
+/* Message Options Popover */
+.message-row {
+    position: relative;
+    z-index: 1;
+}
+
+.message-row.selected {
+    z-index: 10;
+}
+
+.message-options-popover {
+    position: absolute;
+    top: 100%;
+    margin-top: 4px;
+    /* Reverted */
+    display: none;
+    align-items: center;
+    gap: 12px;
+    /* Increased gap */
+    background: none;
+    /* Removed bg */
+    backdrop-filter: none;
+    padding: 0;
+    z-index: 200;
+    border: none;
+}
+
+.message-row.selected .message-options-popover {
+    display: flex;
+    animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message-row:not(.sent-row) .message-options-popover {
+    left: 42px;
+}
+
+.message-row.sent-row .message-options-popover {
+    right: 0;
+}
+
+.popover-btn {
+    background: #262626;
+    border: 1px solid #333;
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.popover-btn:hover {
+    background: #333;
+    transform: translateY(-2px);
+    color: var(--accent-color);
+}
+
+.popover-btn.delete:hover {
+    color: var(--danger-color);
+}
+
+/* Editable Elements */
+[contenteditable="true"] {
+    outline: none;
+    cursor: text;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+[contenteditable="true"]:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+[contenteditable="true"]:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 1px var(--accent-color);
+    cursor: text;
+}
+
+/* Hide scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Undo Toast */
+.undo-toast {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #222;
+    color: white;
+    padding: 14px 24px;
+    border-radius: 50px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    z-index: 999999;
+    min-width: 280px;
+    justify-content: space-between;
+    animation: slideUp 0.3s ease-out;
+    font-size: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.undo-toast span {
+    font-weight: 500;
+}
+
+.undo-toast button {
+    background: none;
+    border: none;
+    color: var(--accent-color);
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+}
+
+.undo-toast button:hover {
+    text-decoration: underline;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translate(-50%, 20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
+
+/* Modal Overlay */
+.modal {
+    display: none;
+    /* Hidden by default but flex when active via JS */
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    /* display: flex; handled by JS toggling class or style */
+    justify-content: center;
+    align-items: center;
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: #262626;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #444;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.crop-container {
+    width: 100%;
+    height: 400px;
+    background-color: #000;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}

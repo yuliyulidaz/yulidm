@@ -1,0 +1,497 @@
+/* Chat Component Styles */
+.chat-root {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: white;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Styles (Instagram Style) */
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid #262626;
+    /* Added border */
+    background-color: transparent;
+    /* Assuming container bg handles it */
+    min-height: 44px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.back-icon {
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.header-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-avatar {
+    width: 32px;
+    height: 32px;
+    /* Slightly larger than chat avatar */
+    border-radius: 50%;
+    background-color: #333;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    /* Clickable */
+    position: relative;
+    /* For pseudo-element */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-avatar.empty-state::after {
+    content: "\f030";
+    /* FontAwesome Camera Icon */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+    pointer-events: none;
+    /* Let clicks pass through */
+}
+
+.header-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.header-name {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: text;
+    min-height: 18px;
+    /* Ensure visible even if empty */
+}
+
+.header-name:empty::before {
+    content: attr(data-placeholder);
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 400;
+}
+
+.header-username {
+    font-size: 11px;
+    color: #a8a8a8;
+    line-height: 1.2;
+    cursor: text;
+    min-height: 15px;
+    /* Ensure visible */
+    margin-top: 4px;
+}
+
+.header-username:empty::before {
+    content: attr(data-placeholder);
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 20px;
+}
+
+.header-right i,
+.header-right svg {
+    cursor: pointer;
+}
+
+
+/* Chat Column */
+.chat-column {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 30px;
+    /* Increased spacing */
+}
+
+.column-title {
+    color: #8e8e8e;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 600;
+    display: none;
+    /* Hidden by default unless enabled */
+}
+
+.chat-area {
+    display: flex;
+    flex-direction: column;
+}
+
+.time-stamp {
+    text-align: center;
+    color: #8e8e8e;
+    font-size: 11px;
+    margin-bottom: 24px;
+    font-weight: 500;
+}
+
+/* Common Message Style */
+.message {
+    max-width: 70%;
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 0px;
+    position: relative;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    /* Preserve line breaks */
+}
+
+
+.message-row {
+    display: flex;
+    width: 100%;
+    margin-bottom: 2px;
+    align-items: flex-end;
+    /* Align items to bottom */
+}
+
+/* Instagram Theme (Purple-Pink) */
+.theme-instagram .sent .message-content {
+    background: linear-gradient(135deg, #a740e0 0%, #f04e76 100%);
+    color: white;
+}
+
+/* Dark Theme (Simple Gray) */
+.theme-dark .sent .message-content {
+    background: #262626;
+    color: white;
+}
+
+/* Received (Left) */
+.received {
+    align-self: flex-start;
+    background-color: #262626;
+    color: white;
+    border-radius: 22px;
+    border-bottom-left-radius: 4px;
+    /* Default for single message */
+}
+
+/* Sent (Right) */
+/* Sent (Right) */
+.sent {
+    align-self: flex-end;
+    background: var(--sent-bubble-bg, linear-gradient(to right, #3797f0, #0064e0));
+    /* Changed to background for solid color support */
+    color: white;
+    border-radius: 22px;
+    border-bottom-right-radius: 4px;
+    /* Default for single message */
+}
+
+/* Grouping Logic Classes */
+.received.group-top {
+    border-bottom-left-radius: 4px;
+    /* Connect to next */
+}
+
+.received.group-middle {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.received.group-end {
+    border-top-left-radius: 4px;
+    /* Connect to prev */
+    border-bottom-left-radius: 22px !important;
+    /* Rounded End (Priority) */
+}
+
+
+/* Sent Grouping Logic */
+.sent.group-top {
+    border-bottom-right-radius: 4px;
+    /* Connect to next */
+}
+
+.sent.group-middle {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.sent.group-end {
+    border-top-right-radius: 4px;
+    /* Connect to prev */
+    border-bottom-right-radius: 22px !important;
+    /* Rounded End (Priority) */
+}
+
+/* Avatar */
+.avatar-small {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #333;
+    background-size: cover;
+    background-position: center;
+    margin-right: 8px;
+    margin-top: 0px;
+    flex-shrink: 0;
+    align-self: flex-end;
+    /* Force bottom alignment */
+    margin-bottom: 0px;
+    /* Align perfectly with bubble */
+}
+
+margin-bottom: 0px;
+/* Align perfectly with bubble */
+}
+
+/* Image Message Specifics */
+.message.image-message {
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none;
+}
+
+.message.image-message img {
+    border-radius: inherit;
+    /* Follows the grouping radius */
+    display: block;
+}
+
+/* Link Preview */
+.link-preview {
+    display: flex;
+    flex-direction: column;
+    background-color: #262626;
+    border-radius: 18px;
+    overflow: hidden;
+    margin-bottom: 2px;
+    width: 260px;
+    /* Fixed width */
+    cursor: pointer;
+    border: 1px solid #333;
+}
+
+.sent .link-preview {
+    background-color: #262626;
+    /* Match Left side */
+    border: none;
+    /* Remove border to match Left side style */
+}
+
+.link-image {
+    width: 100%;
+    height: 140px;
+    background-color: #333;
+    background-size: cover;
+    background-position: center;
+}
+
+.link-info {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.link-title {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: white;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.link-domain {
+    font-size: 11px;
+    color: #8e8e8e;
+}
+
+.sent .link-domain {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Day Mode Override */
+/* Day Mode Override */
+body.day-mode .chat-root {
+    color: #000;
+}
+
+body.day-mode .received {
+    background-color: #efefef;
+    color: #000;
+    border: none;
+}
+
+/* Day Mode Header Fixes */
+body.day-mode .header-name:empty::before {
+    color: rgba(0, 0, 0, 0.4);
+    /* Gray for visible placeholder */
+}
+
+body.day-mode .header-username:empty::before {
+    color: rgba(0, 0, 0, 0.3);
+    /* Gray for visible placeholder */
+}
+
+body.day-mode .header-avatar {
+    background-color: #efefef;
+    /* Light background for Day Mode */
+}
+
+body.day-mode .header-avatar.empty-state::after {
+    color: #a0a0a0;
+    /* Medium gray icon for visibility */
+}
+
+body.day-mode .link-preview {
+    background-color: #efefef;
+    border-color: #dbdbdb;
+}
+
+body.day-mode .link-title {
+    color: #000;
+}
+
+body.day-mode .sent .link-domain {
+    color: #8e8e8e;
+    /* Fix white text in Day Mode */
+}
+
+body.day-mode .header-username {
+    color: #737373;
+}
+
+body.day-mode .chat-header {
+    border-bottom: 1px solid #dbdbdb;
+}
+
+/* Status Menu */
+.status-menu {
+    position: absolute;
+    top: 45px;
+    /* Below the header text */
+    left: 60px;
+    /* Align near text */
+    background: #333;
+    border-radius: 8px;
+    padding: 8px 0;
+    width: 160px;
+    z-index: 2000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+body.day-mode .status-menu {
+    background: #fff;
+    border: 1px solid #dbdbdb;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Read Receipt Row */
+.read-receipt-row {
+    display: flex;
+    justify-content: flex-end;
+    /* Align right */
+    width: 100%;
+    margin-bottom: 4px;
+    /* Space below */
+    padding-right: 4px;
+    /* Align slightly inward */
+}
+
+.read-receipt-text {
+    font-size: 11px;
+    color: #8e8e8e;
+    font-weight: 500;
+}
+
+body.day-mode .read-receipt-text {
+    color: #8e8e8e;
+}
+
+.status-menu.hidden {
+    display: none;
+}
+
+.status-item {
+    padding: 8px 12px;
+    font-size: 13px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+body.day-mode .status-item {
+    color: #262626;
+}
+
+.status-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.day-mode .status-item:hover {
+    background: #f0f0f0;
+}
+
+.green-dot-icon {
+    width: 8px;
+    height: 8px;
+    background: #00d26a;
+    /* Instagram Green */
+    border-radius: 50%;
+}
+
+/* Header Avatar Online Status (Green Dot) */
+.header-avatar.online {
+    /* No change to avatar itself, but handles dot */
+}
+
+.header-avatar.online::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    background: #73e33e;
+    /* Brighter Green */
+    border: 2px solid #000;
+    /* Dark Mode Border */
+    border-radius: 50%;
+    z-index: 10;
+}
+
+body.day-mode .header-avatar.online::before {
+    border: 2px solid #fff;
+    /* Day Mode Border */
+}
+
+/* Ensure Camera Hint (::after) doesn't conflict positionally/z-index with dot (::before) */
+.header-avatar.empty-state::after {
+    z-index: 5;
+}

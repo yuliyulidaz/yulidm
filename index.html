@@ -6,17 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Maker</title>
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="vendor/inter/400.css">
+    <link rel="stylesheet" href="vendor/inter/500.css">
+    <link rel="stylesheet" href="vendor/inter/600.css">
+    <link rel="stylesheet" href="vendor/inter/700.css">
+    <link rel="stylesheet" href="vendor/fontawesome-free/css/all.min.css">
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/chat.css">
 
     <!-- Libraries -->
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="vendor/html2canvas/dist/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="vendor/cropperjs/dist/cropper.min.css">
+    <script src="vendor/cropperjs/dist/cropper.min.js"></script>
 </head>
 
 <body>
@@ -58,8 +61,6 @@
                         </div>
                     </div>
                 </div>
-
-                <button id="btn-save" class="floating-save-btn" title="이미지로 저장"><i class="fas fa-download"></i></button>
 
                 <button id="btn-export" class="floating-save-btn" title="이미지 저장" data-html2canvas-ignore="true">
                     <i class="fas fa-download"></i>
@@ -144,6 +145,8 @@
 
     <input type="file" id="hidden-file-input" accept="image/*" style="display: none;">
     <script src="js/app.js"></script>
+    <script src="vendor/fflate/fflate.min.js"></script>
+    <script src="js/png.js"></script>
     <script src="js/export.js"></script>
 </body>
 

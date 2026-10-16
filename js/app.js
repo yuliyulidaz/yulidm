@@ -1,5 +1,6 @@
 // State
 let messages = [];
+let nextMessageId = 1;
 let isDayMode = false;
 let selectedMessageId = null;
 let isLinkMenuOpen = false;
@@ -66,17 +67,26 @@ let currentUploadCallback = null;
 let currentCropper = null;
 let currentTargetType = 'avatar'; // 'avatar' or 'link'
 let isCustomAvatar = false;
+let cropObjectUrl = null;
 
-hiddenFileInput.addEventListener('change', (e) => {
+hiddenFileInput.addEventListener('change', async (e) => {
     const file = e.target.files[0];
-    if (file && currentUploadCallback) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            // Open Modal instead of direct apply
-            openCropModal(event.target.result);
-            hiddenFileInput.value = ''; // Reset
-        };
-        reader.readAsDataURL(file);
+    hiddenFileInput.value = ''; // Allow selecting the same file again.
+    if (!file || !currentUploadCallback) return;
+    if (!file.type.startsWith('image/')) {
+        alert('이미지 파일을 선택해 주세요.');
+        return;
+    }
+    const objectUrl = URL.createObjectURL(file);
+    try {
+        cropImage.src = objectUrl;
+        await cropImage.decode();
+        cropObjectUrl = objectUrl;
+        openCropModal();
+    } catch (error) {
+        currentUploadCallback = null;
+        alert('이미지를 열 수 없습니다. 다른 이미지 파일을 선택해 주세요.');
+        URL.revokeObjectURL(objectUrl);
     }
 });
 
@@ -86,59 +96,48 @@ function triggerFileUpload(callback, type = 'avatar') {
     hiddenFileInput.click();
 }
 
-function openCropModal(imageSrc) {
-    cropImage.src = imageSrc;
+function openCropModal() {
     cropModal.style.display = 'flex';
-
-    if (currentCropper) {
-        currentCropper.destroy();
-    }
-
-    const ratio = currentTargetType === 'avatar' ? 1 :
-        currentTargetType === 'photo' ? NaN : 1.85; // NaN = Free aspect ratio for photos
-
+    if (currentCropper) currentCropper.destroy();
+    btnCropConfirm.disabled = true;
     currentCropper = new Cropper(cropImage, {
-        aspectRatio: ratio,
+        aspectRatio: currentTargetType === 'avatar' ? 1 :
+            currentTargetType === 'photo' ? NaN : 1.85,
         viewMode: 1,
         autoCropArea: 1,
+        ready() { btnCropConfirm.disabled = false; }
     });
 }
 
 function closeCropModal() {
     cropModal.style.display = 'none';
-    if (currentCropper) {
-        currentCropper.destroy();
-        currentCropper = null;
-    }
+    if (currentCropper) currentCropper.destroy();
+    currentCropper = null;
+    currentUploadCallback = null;
+    cropImage.removeAttribute('src');
+    if (cropObjectUrl) URL.revokeObjectURL(cropObjectUrl);
+    cropObjectUrl = null;
 }
 
-btnCropCancel.addEventListener('click', () => {
-    closeCropModal();
-    currentUploadCallback = null;
-});
+btnCropCancel.addEventListener('click', closeCropModal);
 
 btnCropConfirm.addEventListener('click', () => {
-    if (currentCropper && currentUploadCallback) {
-        // dimensions logic
-        let width, height;
-
-        if (currentTargetType === 'avatar') {
-            width = 300; height = 300;
-        } else if (currentTargetType === 'photo') {
-            width = 1200; height = 1200; // High quality for photos (max dimension)
-        } else {
-            width = 600; height = 324; // Link default
-        }
-
+    if (!currentCropper || !currentUploadCallback || btnCropConfirm.disabled) return;
+    try {
+        // Bound the longest photo edge while preserving the selected crop ratio.
+        const options = currentTargetType === 'avatar' ? { width: 300, height: 300 } :
+            currentTargetType === 'photo' ? { maxWidth: 2400, maxHeight: 2400 } :
+                { width: 600, height: 600 / 1.85 };
         const canvas = currentCropper.getCroppedCanvas({
-            width: width,
-            height: height,
+            ...options,
+            imageSmoothingEnabled: true,
             imageSmoothingQuality: 'high'
         });
-
-        currentUploadCallback(canvas.toDataURL('image/jpeg', 0.9)); // High quality JPEG
+        if (!canvas || !canvas.width || !canvas.height) throw new Error('Empty crop');
+        currentUploadCallback(canvas.toDataURL('image/png'));
         closeCropModal();
-        currentUploadCallback = null;
+    } catch (error) {
+        alert('이미지를 자르지 못했습니다. 다른 영역을 선택해 다시 시도해 주세요.');
     }
 });
 
@@ -452,7 +451,7 @@ function addMessage(type, side = null, content = '...') {
     }
 
     const newMessage = {
-        id: Date.now(),
+        id: nextMessageId++,
         type: type,
         side: side,
         content: content,
@@ -678,7 +677,27 @@ function render() {
         const bubble = document.createElement('div');
         bubble.className = `message ${msg.side === 'left' ? 'received' : 'sent'}`;
 
-        if (msg.type === 'link') {
+        if (msg.type === 'image') {
+            bubble.classList.add('image-message');
+            const photoButton = document.createElement('button');
+            photoButton.type = 'button';
+            photoButton.className = 'photo-message-button';
+            photoButton.setAttribute('aria-label', msg.imageUrl ? '사진 다시 선택 및 자르기' : '사진 선택 및 자르기');
+            photoButton.onclick = (event) => {
+                event.stopPropagation();
+                window.uploadImageForMessage(msg.id);
+            };
+            if (msg.imageUrl) {
+                const image = document.createElement('img');
+                image.src = msg.imageUrl;
+                image.alt = '사진 메시지';
+                photoButton.appendChild(image);
+            } else {
+                photoButton.classList.add('photo-placeholder');
+                photoButton.textContent = '사진 추가';
+            }
+            bubble.appendChild(photoButton);
+        } else if (msg.type === 'link') {
             bubble.style.padding = '0';
             bubble.style.overflow = 'hidden';
             bubble.style.background = 'none';
@@ -823,13 +842,15 @@ function renderActionBar() {
     if (isPhotoMenuOpen) {
         actionBar.querySelector('#btn-photo-left').addEventListener('click', (e) => {
             e.stopPropagation();
-            addMessage('image', 'left');
             isPhotoMenuOpen = false;
+            addMessage('image', 'left');
+            window.uploadImageForMessage(messages[messages.length - 1].id);
         });
         actionBar.querySelector('#btn-photo-right').addEventListener('click', (e) => {
             e.stopPropagation();
-            addMessage('image', 'right');
             isPhotoMenuOpen = false;
+            addMessage('image', 'right');
+            window.uploadImageForMessage(messages[messages.length - 1].id);
         });
     }
 }

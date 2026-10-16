@@ -1,0 +1,56 @@
+{
+  "packages": {
+    "@fontsource/inter": {
+      "version": "4.5.15",
+      "resolved": "https://registry.npmjs.org/@fontsource/inter/-/inter-4.5.15.tgz",
+      "integrity": "sha512-FzleM9AxZQK2nqsTDtBiY0PMEVWvnKnuu2i09+p6DHvrHsuucoV2j0tmw+kAT3L4hvsLdAIDv6MdGehsPIdT+Q=="
+    },
+    "@fortawesome/fontawesome-free": {
+      "version": "6.0.0",
+      "resolved": "https://registry.npmjs.org/@fortawesome/fontawesome-free/-/fontawesome-free-6.0.0.tgz",
+      "integrity": "sha512-6LB4PYBST1Rx40klypw1SmSDArjFOcfBf2LeX9Zg5EKJT2eXiyiJq+CyBYKeXyK0sXS2FsCJWSPr/luyhuvh0Q=="
+    },
+    "cropperjs": {
+      "version": "1.5.13",
+      "resolved": "https://registry.npmjs.org/cropperjs/-/cropperjs-1.5.13.tgz",
+      "integrity": "sha512-by7jKAo73y5/Do0K6sxdTKHgndY0NMjG2bEdgeJxycbcmHuCiMXqw8sxy5C5Y5WTOTcDGmbT7Sr5CgKOXR06OA=="
+    },
+    "fflate": {
+      "version": "0.8.2",
+      "resolved": "https://registry.npmjs.org/fflate/-/fflate-0.8.2.tgz",
+      "integrity": "sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A=="
+    },
+    "html2canvas": {
+      "version": "1.4.1",
+      "resolved": "https://registry.npmjs.org/html2canvas/-/html2canvas-1.4.1.tgz",
+      "integrity": "sha512-fPU6BHNpsyIhr8yyMpTLLxAbkaK8ArIBcmZIRiBLiDhjeqvXolaEmDGmELFuX9I4xDcaKKcJl+TKZLqruBbmWA=="
+    }
+  },
+  "sha256": {
+    "cropperjs/LICENSE": "eb917650781dcf06a60b97cba9b05bf583931ec2d311d8a5548a8dca90a57e0f",
+    "cropperjs/dist/cropper.min.css": "055b9c1ce54007be24408e3d02e584e82c60a9a52cd1c780e5ff08318a1d787f",
+    "cropperjs/dist/cropper.min.js": "615835110d07d9842d1c0a995e9fc79fb4dfa8d2c1b879ff0d648570714ee1c7",
+    "fflate/LICENSE": "805f6cb28bb8b6d3a0badd83c93bccd9671fa01a3b4b92b7042b0743325ac243",
+    "fflate/fflate.min.js": "c3b34f2e9f5e74d4d7d64e01cac7a0c01954c6c406414d42185c7b53d6875ddf",
+    "fontawesome-free/LICENSE.txt": "de784a808496d49f5f80dd9d1d6e9a51cff712cfbc339e7c25155631ae3cdb5d",
+    "fontawesome-free/css/all.min.css": "8d321d88cb97fdedc3189506c25de9292c6e73a60ebaab496243346c6404480e",
+    "fontawesome-free/webfonts/fa-brands-400.woff2": "29bc44694c394921d1f00271128a2e4cd8293516216e24eac07a73fa821fc1f5",
+    "fontawesome-free/webfonts/fa-regular-400.woff2": "fa79fc4f2559112ff3dd27cf5be216d9b5f88066ceef728264f5a3a1a195fc1e",
+    "fontawesome-free/webfonts/fa-solid-900.woff2": "1b099f88c06ed0869872561c157f0ec9cbe133a0939d9ece4ee1e1f54bd4683d",
+    "html2canvas/LICENSE": "86200ce4e92d9a22c41c8647a55f7a5fddff304ff89b4d36ecc699ed8c123d2c",
+    "html2canvas/dist/html2canvas.min.js": "e87e550794322e574a1fda0c1549a3c70dae5a93d9113417a429016838eab8cb",
+    "inter/400.css": "937c1b57154f50afb4e8b53a51bef6933c88d662dc50d3894f18016c2fb09dbf",
+    "inter/500.css": "2750cab320cbe97dc89f9fbdcf87dc1285d0459f40139dd9976d4fd8d3df0bcf",
+    "inter/600.css": "085cc7df977a8f6bb6e063010f0eec8ff2b17b29109e9b95e89ac87950b5e334",
+    "inter/700.css": "a710066e1545cb258a53188864e2a125226fde4b200d64aa2bdca84cd3ba58e8",
+    "inter/LICENSE.txt": "4d7d9c95e7d7f2f0ebf76d5e0b344826b74e903a34028ee18ab54bb639e45906",
+    "inter/files/inter-latin-400-normal.woff": "3ea830d422488e32c1394d4db011a7761ba94ed5e8ee150a3b3ca5139ac86017",
+    "inter/files/inter-latin-400-normal.woff2": "0364d368abf457d4e70dbc7a7a360f3486eaea2837b194915b23d4398bee91ac",
+    "inter/files/inter-latin-500-normal.woff": "2514f3dfbfcbcfa6e0515edbcaceb65a682c7d6062e1a6b2d438917cc75382e9",
+    "inter/files/inter-latin-500-normal.woff2": "d53336707c39d1ec20a2b1f7399ca9f183c45592e215a42fd596dfa2dbb8ad7a",
+    "inter/files/inter-latin-600-normal.woff": "22b2f9fbbe8a76005ec2f4ef38f2a412267a00578c838e01233711f22d329004",
+    "inter/files/inter-latin-600-normal.woff2": "048d136d592e66896cccc1fe4fada4feb16b7f6af671cd49a2fe6ed6b2276c6c",
+    "inter/files/inter-latin-700-normal.woff": "51df444d3a9a5b5368402f46d7ec6145d78a8e55d184c12bf431c72a3c982da6",
+    "inter/files/inter-latin-700-normal.woff2": "ced2d8e02e2fbf08d2edec9b5f13648ed8348588a05f7181632f3c1dd6e1f5c3"
+  }
+}

@@ -48,6 +48,7 @@ test('offline photo crops, existing controls, and complete high-resolution long 
         await page.goto('http://127.0.0.1:8765/', { waitUntil: 'networkidle' });
         await page.evaluate(() => document.fonts.ready);
         assert.equal(await page.locator('.message-row').count(), 1);
+        assert.equal(await page.locator('#btn-theme-toggle i').getAttribute('class'), 'far fa-sun');
         assert.deepEqual(await page.evaluate(() => [typeof html2canvas, typeof Cropper, typeof fflate]), ['function', 'function', 'object']);
         await page.locator('#btn-add-right').click();
         await page.locator('.sent[contenteditable]').fill('기존 말풍선 편집');
@@ -98,6 +99,8 @@ test('offline photo crops, existing controls, and complete high-resolution long 
         assert.ok((await page.locator('#chat-area').innerText()).includes('기존 말풍선 편집'));
         await page.locator('#btn-settings').click(); await page.locator('#btn-theme-toggle').click();
         assert.equal(await page.locator('body').evaluate(e => e.classList.contains('day-mode')), true);
+        assert.equal(await page.locator('#btn-theme-toggle i').getAttribute('class'), 'fas fa-moon');
+        assert.equal(await page.locator('#btn-theme-toggle').getAttribute('aria-label'), '다크 모드로 전환');
         await page.locator('#btn-width-toggle').click(); await page.locator('[data-width="520"]').click();
         await page.waitForTimeout(350); // Complete the existing width transition before measuring export.
 
@@ -105,6 +108,7 @@ test('offline photo crops, existing controls, and complete high-resolution long 
         async function download(name) {
             const event = page.waitForEvent('download', { timeout: 120000 });
             await page.locator('#btn-export').click();
+            await page.locator('#download-all').click();
             const item = await event;
             await fs.mkdir('test-results', { recursive: true });
             const target = path.resolve('test-results', name);
@@ -115,6 +119,7 @@ test('offline photo crops, existing controls, and complete high-resolution long 
         const light = await download('light.png');
         assert.deepEqual([...light.data.subarray((20 * light.width + 20) * 4, (20 * light.width + 20) * 4 + 4)], [255, 255, 255, 255]);
         await page.locator('#btn-settings').click(); await page.locator('#btn-theme-toggle').click();
+        assert.equal(await page.locator('#btn-theme-toggle i').getAttribute('class'), 'far fa-sun');
         const dark = await download('dark.png');
         assert.deepEqual([...dark.data.subarray((20 * dark.width + 20) * 4, (20 * dark.width + 20) * 4 + 4)], [18, 18, 18, 255]);
 
@@ -151,6 +156,60 @@ test('offline photo crops, existing controls, and complete high-resolution long 
             const e = document.getElementById('capture-area'); return { scroll: e.scrollTop, maxHeight: getComputedStyle(e).maxHeight };
         }), { scroll: dimensions.scroll, maxHeight: dimensions.maxHeight });
         assert.equal(await page.evaluate(() => new Set(messages.map(m => m.id)).size === messages.length), true);
+        // Narrow screens retain the chosen chat width and expose both ends via horizontal scroll.
+        await page.setViewportSize({ width: 375, height: 800 });
+        const horizontal = await page.locator('.app-container').evaluate(e => {
+            e.scrollLeft = 0;
+            return { client: e.clientWidth, scroll: e.scrollWidth };
+        });
+        assert.ok(horizontal.scroll > horizontal.client);
+        assert.ok((await page.locator('#btn-settings').boundingBox()).x >= 0);
+        await page.locator('.app-container').evaluate(e => { e.scrollLeft = e.scrollWidth; });
+        const rightButton = await page.locator('#btn-export').boundingBox();
+        assert.ok(rightButton.x >= 0 && rightButton.x + rightButton.width <= 375);
+        assert.equal(await page.locator('#capture-area').evaluate(e => e.clientWidth * 2), dimensions.width);
+
+        // Selection is explicit, reversible, keyboard accessible, and does not edit messages.
+        await page.locator('#btn-export').click();
+        await page.locator('#download-selection').click();
+        assert.equal(await page.locator('#export-selection-save').isDisabled(), true);
+        await page.locator('.message-row').first().click();
+        await page.locator('.message-row').first().press('Space');
+        assert.equal(await page.locator('#export-selection-save').isDisabled(), true);
+        await page.locator('#export-selection-cancel').click();
+        assert.equal(await page.locator('.export-picked').count(), 0);
+        assert.equal(await page.locator('.sent[contenteditable="true"]').count() > 0, true);
+        await page.locator('#btn-export').click();
+        await page.locator('#download-selection').click();
+        await page.locator('.message-row').first().click();
+        const photoRow = page.locator('.message-row').filter({ has: page.locator('.sent.image-message') }).first();
+        await photoRow.click();
+        assert.equal(await page.locator('.export-picked').count(), 2);
+        assert.equal(await page.locator('#export-selection-save').innerText(), '선택 저장 (2)');
+        const originalRows = await page.locator('#capture-area .message-row').count();
+        const selectionDownload = page.waitForEvent('download');
+        await page.locator('#export-selection-save').click();
+        const selectedFile = await selectionDownload;
+        assert.match(selectedFile.suggestedFilename(), /^chat-selection-/);
+        await selectedFile.saveAs('test-results/selection.png');
+        await page.waitForFunction(() => !document.getElementById('btn-export').disabled);
+        const selectedImage = PNG.sync.read(await fs.readFile('test-results/selection.png'));
+        assert.equal(selectedImage.width, dimensions.width);
+        assert.ok(selectedImage.height < 1500 && selectedImage.height > 300);
+        let green = 0, magenta = 0, selectionBlue = 0;
+        for (let i = 0; i < selectedImage.data.length; i += 4) {
+            const [r, g, b] = selectedImage.data.subarray(i, i + 3);
+            if (r === 0 && g === 255 && b === 0) green++;
+            if (r === 255 && g === 0 && b === 255) magenta++;
+            if (r === 0 && g === 149 && b === 246) selectionBlue++;
+        }
+        assert.ok(green > 10000, 'Selected cropped photo must be saved');
+        assert.equal(magenta, 0, 'Unselected final photo must not be saved');
+        assert.equal(selectionBlue, 0, 'Selection outline must not be saved');
+        assert.equal(await page.locator('#capture-area .message-row').count(), originalRows);
+        assert.equal(await page.locator('#export-selection-toolbar').isHidden(), true);
+        assert.equal(await page.locator('[data-export-editable]').count(), 0);
+        assert.equal(await page.locator('#export-capture').count(), 0);
         await page.screenshot({ path: 'test-results/editor.png' });
         assert.deepEqual(errors, []); assert.deepEqual(external, []); assert.deepEqual(badResponses, []);
         console.log(`Verified offline PNG ${long.width}×${long.height}, bottom marker ${markerPixels} pixels.`);

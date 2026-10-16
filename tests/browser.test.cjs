@@ -17,6 +17,16 @@ function fixture(width = 800, height = 400, solid = false) {
     return PNG.sync.write(png);
 }
 
+function avatarFixture() {
+    const png = new PNG({ width: 300, height: 300 });
+    for (let y = 0; y < 300; y++) for (let x = 0; x < 300; x++) {
+        const i = (y * 300 + x) * 4;
+        const value = (Math.floor(x / 5) + Math.floor(y / 5)) % 2 ? 255 : 0;
+        png.data.set([value, 128, 255 - value, 255], i);
+    }
+    return PNG.sync.write(png);
+}
+
 // The app must make no Internet requests, even with all nonlocal traffic blocked.
 test('offline photo crops, existing controls, and complete high-resolution long PNG', { timeout: 180000 }, async () => {
     const server = spawn('python3', ['-m', 'http.server', '8765', '--bind', '127.0.0.1'], {
@@ -88,7 +98,7 @@ test('offline photo crops, existing controls, and complete high-resolution long 
         // The avatar and link crop workflows still use their constrained ratios.
         for (const selector of ['#header-avatar', '.link-image']) {
             const file = page.waitForEvent('filechooser'); await page.locator(selector).click();
-            await (await file).setFiles({ name: 'photo.png', mimeType: 'image/png', buffer: fixture() });
+            await (await file).setFiles({ name: 'photo.png', mimeType: 'image/png', buffer: selector === '#header-avatar' ? avatarFixture() : fixture() });
             await page.waitForFunction(() => currentCropper && !document.getElementById('btn-crop-confirm').disabled);
             await page.locator('#btn-crop-confirm').click();
         }
@@ -120,7 +130,65 @@ test('offline photo crops, existing controls, and complete high-resolution long 
         assert.deepEqual([...light.data.subarray((20 * light.width + 20) * 4, (20 * light.width + 20) * 4 + 4)], [255, 255, 255, 255]);
         await page.locator('#btn-settings').click(); await page.locator('#btn-theme-toggle').click();
         assert.equal(await page.locator('#btn-theme-toggle i').getAttribute('class'), 'far fa-sun');
+        const iconReferences = await page.evaluate(async () => {
+            const capture = document.getElementById('capture-area');
+            const root = capture.getBoundingClientRect();
+            return Promise.all([...capture.querySelectorAll('.header-right svg')].map(async svg => {
+                const bounds = svg.getBoundingClientRect();
+                const vector = svg.cloneNode(true);
+                vector.setAttribute('width', '48'); vector.setAttribute('height', '48');
+                vector.style.color = getComputedStyle(svg).color;
+                const image = new Image();
+                image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(vector));
+                await image.decode();
+                const canvas = document.createElement('canvas'); canvas.width = canvas.height = 48;
+                const context = canvas.getContext('2d');
+                context.fillStyle = '#121212'; context.fillRect(0, 0, 48, 48); context.drawImage(image, 0, 0);
+                return { x: Math.round((bounds.left - root.left + capture.scrollLeft) * 2),
+                    y: Math.round((bounds.top - root.top + capture.scrollTop) * 2), data: canvas.toDataURL() };
+            }));
+        });
+        const avatarReferences = await page.evaluate(async () => {
+            const capture = document.getElementById('capture-area');
+            const root = capture.getBoundingClientRect();
+            return Promise.all([...capture.querySelectorAll('#header-avatar, .avatar-small')].filter(e => getComputedStyle(e).visibility !== 'hidden').map(async avatar => {
+                const bounds = avatar.getBoundingClientRect();
+                const image = new Image();
+                image.src = getComputedStyle(avatar).backgroundImage.slice(4, -1).replace(/^['"]|['"]$/g, '');
+                await image.decode();
+                const canvas = document.createElement('canvas');
+                canvas.width = bounds.width * 2; canvas.height = bounds.height * 2;
+                const x = (bounds.left - root.left + capture.scrollLeft) * 2;
+                const y = (bounds.top - root.top + capture.scrollTop) * 2;
+                canvas.getContext('2d').drawImage(image, x - Math.round(x), y - Math.round(y), canvas.width, canvas.height);
+                return { x: Math.round((bounds.left - root.left + capture.scrollLeft) * 2),
+                    y: Math.round((bounds.top - root.top + capture.scrollTop) * 2), data: canvas.toDataURL() };
+            }));
+        });
         const dark = await download('dark.png');
+        for (const avatar of avatarReferences) {
+            const reference = PNG.sync.read(Buffer.from(avatar.data.split(',')[1], 'base64'));
+            let difference = 0, count = 0;
+            // Compare inside the circle, leaving antialiased boundary pixels out.
+            for (let y = 0; y < reference.height; y++) for (let x = 0; x < reference.width; x++) {
+                if (Math.hypot(x - reference.width / 2, y - reference.height / 2) > reference.width / 2 - 8) continue;
+                for (let c = 0; c < 3; c++) {
+                    difference += Math.abs(reference.data[(y * reference.width + x) * 4 + c] - dark.data[((avatar.y + y) * dark.width + avatar.x + x) * 4 + c]); count++;
+                }
+            }
+            console.log(`Avatar export pixel difference: ${(difference / count).toFixed(3)}`);
+            assert.ok(difference / count < 1, 'Avatar must be sampled directly at the output resolution');
+        }
+        for (const icon of iconReferences) {
+            const reference = PNG.sync.read(Buffer.from(icon.data.split(',')[1], 'base64'));
+            let difference = 0;
+            for (let y = 0; y < 48; y++) for (let x = 0; x < 48; x++) {
+                for (let c = 0; c < 3; c++) difference += Math.abs(reference.data[(y * 48 + x) * 4 + c] - dark.data[((icon.y + y) * dark.width + icon.x + x) * 4 + c]);
+            }
+            const mean = difference / (48 * 48 * 3);
+            console.log(`SVG export pixel difference: ${mean.toFixed(3)}`);
+            assert.ok(mean < 1, 'Exported icon must match a vector rendered directly at 48px');
+        }
         assert.deepEqual([...dark.data.subarray((20 * dark.width + 20) * 4, (20 * dark.width + 20) * 4 + 4)], [18, 18, 18, 255]);
 
         const marker = 'data:image/png;base64,' + fixture(200, 100, true).toString('base64');

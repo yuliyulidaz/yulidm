@@ -257,10 +257,6 @@
     /* Align perfectly with bubble */
 }
 
-margin-bottom: 0px;
-/* Align perfectly with bubble */
-}
-
 /* Image Message Specifics */
 .message.image-message {
     padding: 0 !important;
@@ -495,3 +491,29 @@ body.day-mode .header-avatar.online::before {
 .header-avatar.empty-state::after {
     z-index: 5;
 }
+/* Keep uploaded photos at their cropped aspect ratio inside the existing bubbles. */
+.photo-message-button {
+    display: block;
+    width: 100%;
+    max-width: 260px;
+    padding: 0;
+    border: 0;
+    border-radius: inherit;
+    overflow: hidden;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+.photo-message-button img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+.photo-placeholder {
+    width: 220px;
+    min-height: 140px;
+    background: #262626;
+    color: #a8a8a8;
+    font: inherit;
+}
+body.day-mode .photo-placeholder { background: #efefef; color: #737373; }

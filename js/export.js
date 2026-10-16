@@ -147,6 +147,25 @@
             });
             snapshot.querySelectorAll('[contenteditable]').forEach(e => e.removeAttribute('contenteditable'));
             document.body.appendChild(snapshot);
+            // html2canvas downsamples CSS backgrounds to their CSS pixel size before
+            // scaling the output. Use original images in the export-only copy instead.
+            await Promise.all([...snapshot.querySelectorAll('#header-avatar, .avatar-small')].map(async avatar => {
+                const background = getComputedStyle(avatar).backgroundImage;
+                if (!background.startsWith('url(')) return;
+                const source = background.slice(4, -1).replace(/^['"]|['"]$/g, '');
+                if (!source) return;
+                const image = new Image();
+                image.alt = '';
+                image.src = source;
+                await image.decode();
+                Object.assign(image.style, {
+                    position: 'absolute', left: '0', top: '0',
+                    width: '100%', height: '100%', borderRadius: 'inherit'
+                });
+                avatar.style.position = 'relative';
+                avatar.style.backgroundImage = 'none';
+                avatar.appendChild(image);
+            }));
             const element = snapshot;
             const height = Math.ceil(element.getBoundingClientRect().height);
             const scale = 2;

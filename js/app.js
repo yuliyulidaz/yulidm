@@ -266,6 +266,8 @@ function init() {
 
     // Global click to deselect & close menus
     document.addEventListener('click', (e) => {
+        if (document.body.classList.contains('export-selecting') ||
+            e.target.closest('#download-menu, #btn-export, #export-selection-toolbar')) return;
         // Close Settings Menu (and palette)
         if (!e.target.closest('#btn-settings') && !e.target.closest('#settings-menu')) {
             settingsMenu.classList.remove('open');
@@ -428,14 +430,16 @@ function updateAllLeftAvatars() {
 
 function toggleTheme() {
     isDayMode = !isDayMode;
-    document.body.classList.toggle('day-mode'); // Apply globally
+    document.body.classList.toggle('day-mode', isDayMode);
     const btnThemeToggle = document.getElementById('btn-theme-toggle');
 
+    btnThemeToggle.title = isDayMode ? '다크 모드로 전환' : '라이트 모드로 전환';
+    btnThemeToggle.setAttribute('aria-label', btnThemeToggle.title);
     if (isDayMode) {
-        btnThemeToggle.innerHTML = '<i class="far fa-sun"></i>'; // Outline Sun
+        btnThemeToggle.innerHTML = '<i class="fas fa-moon" aria-hidden="true"></i>';
         // Styles handled by CSS class body.day-mode
     } else {
-        btnThemeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        btnThemeToggle.innerHTML = '<i class="far fa-sun" aria-hidden="true"></i>';
         // Styles handled by CSS default
     }
 }
@@ -610,6 +614,7 @@ function render() {
 
         const row = document.createElement('div');
         row.className = 'message-row';
+        row.dataset.messageId = msg.id;
         if (msg.side === 'right') {
             row.classList.add('sent-row');
             row.style.justifyContent = 'flex-end';
@@ -745,6 +750,7 @@ function render() {
             // Create a separate row for the receipt to ensure it sits below
             const receiptRow = document.createElement('div');
             receiptRow.className = 'read-receipt-row';
+            receiptRow.dataset.messageId = msg.id;
             receiptRow.innerHTML = `<div class="read-receipt-text">${readReceipt.text}</div>`;
 
             // Append message row first
